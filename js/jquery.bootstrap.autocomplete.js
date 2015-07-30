@@ -11,7 +11,7 @@
 		templates: {
 			"content-wrapper": "<div class=\"autoComplete-wrapper\"></div>",
 			"list-group": "<div class=\"list-group\"></div>",
-			"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=description%></a>",
+			"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=common_title%></a>",
 			"bv-list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=value%></a>"
 		},
 		borderRadius: 5,
@@ -21,7 +21,8 @@
 				// TO DO
 			}
 		},
-		selectionClassName: "list-group-item-info"
+		selectionClassName: "list-group-item-info",
+		url: false
 	};
 
 	var Key = {
@@ -104,24 +105,54 @@
 
 		_this.$input.bind("keyup", function(e){
 			e.preventDefault();
-
-			if(Key.isDown(Key.ENTER)) {
-				_this.hideListGroup();
-				_this.$listGroup.html("");
-			} else if(Key.isDown(Key.DOWN) || Key.isDown(Key.UP)) {
-				_this.onSelection(e);
-				_this.showHideListGroup();
-			} else {
-				_this.search(_this.$input.val());
-				_this.showHideListGroup();
-			}
-
+			_this.performSearch(e);
 		});
 
 		_this.$input.focusout(function(){
 			_this.hideListGroup();
 		});
 	};
+
+	Plugin.prototype.performSearch = function(e) {
+		var _this = this;
+
+		if(typeof _this.timeoutId != undefined) {
+			clearTimeout(_this.timeoutId);
+		}
+
+		if(Key.isDown(Key.ENTER)) {
+			_this.hideListGroup();
+			_this.$listGroup.html("");
+		} else if(Key.isDown(Key.DOWN) || Key.isDown(Key.UP)) {
+			_this.onSelection(e);
+			_this.showHideListGroup();
+		} else {
+			if(_this.options.url == false) {
+			   _this.search(_this.$input.val());
+			   _this.showHideListGroup();
+			} else {
+				_this.timeoutId = setTimeout(function(){
+					var value = _this.$input.val();
+					if(value.trim().length > 0) {
+						$.get(_this.options.url + value, function(res) {
+							if(res.data == null) {
+								_this.options.data = [];
+								return;
+							}
+
+							_this.options.data = res.data;
+							if(_this.options["data"].length > 0) {
+								_this.search(_this.$input.val());
+						   		_this.showHideListGroup();
+							}
+
+							clearTimeout(_this.timeoutId);
+						});
+					}
+				}, 100);
+			}
+		}
+	}
 
 	Plugin.prototype.search = function(keyword) {
 		var _this = this;

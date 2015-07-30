@@ -12,7 +12,7 @@
 		<form>
 			<div class="row">
 				<div class="col-xs-12">
-					<input type="search" class="form-control autocomplete" value="test">
+					<input type="search" class="form-control autocomplete">
 				</div>
 			</div>
 			<div class="row">
@@ -65,24 +65,20 @@
 				// 	}
 				// ],
 
-				data: [
-					"description01",
-					"description02",
-					"description03"
-				],
+				url: "http://10.164.114.13:1219/wda-webapp-0.0.1-SNAPSHOT/wda/enum/type/ssoc/commontitlewildcard/",
 
 				searchable: [
-					"description",
-					"category"
+					"common_title",
+					"ssoc_title"
 				],
 
 				limit: 5,
 
-				display: "description",
+				display: "common_title",
 
-				// templates: {
-				// 	"list-group-item": "<a class=\"list-group-item\" href=\"#\"><b><%=category%></b><br/><%=description%></a>"
-				// }
+				templates: {
+					"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=common_title%><br/><%=ssoc_title%></a>"
+				}
 			};
 
 
