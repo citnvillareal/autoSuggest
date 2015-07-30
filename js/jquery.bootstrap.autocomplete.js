@@ -17,7 +17,9 @@
 		borderRadius: 5,
 		limit: 5,
 		vent: {
-			onselect: function(e, itemData, _this) {}
+			onselect: function(e, itemData, _this) {
+				// TO DO
+			}
 		},
 		selectionClassName: "list-group-item-info"
 	};
@@ -81,17 +83,26 @@
 			"overflow": "hidden"
 		});
 
+		var position = _this.$el.position();
+		var width = _this.$el.outerWidth();
+		var heigth = _this.$el.outerHeight();
+
 		_this.$listGroup = _this.template("list-group").css({
 			"max-height": "200px", 
 			"overflow-y": "auto",
 			"border": "1px solid #ccc", 
 			"border-radius": "0px 0px " + _this.options.borderRadius + "px " + _this.options.borderRadius + "px", 
-			"border-top": 0
+			"border-top": 0,
+			"position": "absolute",
+			"top": position.top + heigth +"px",
+			"left": position.left + "px",
+			"width": width + "px",
+			"z-index": 9999
 		}).hide();
 
 		_this.$parentElement.append(_this.$listGroup);
 
-		_this.$el.bind("keyup", function(e){
+		_this.$input.bind("keyup", function(e){
 			e.preventDefault();
 
 			if(Key.isDown(Key.ENTER)) {
@@ -106,6 +117,10 @@
 			}
 
 		});
+
+		_this.$input.focusout(function(){
+			_this.hideListGroup();
+		});
 	};
 
 	Plugin.prototype.search = function(keyword) {
@@ -119,21 +134,36 @@
 		
 		if(keyword.trim().length > 0 && data.length > 0) {
 			_this.lastKeyWord = keyword;
+			for( var i = 0; i < data.length; i++ ) {
+				var obj = $.extend(true, {}, data[i]);
 
-			for(var i = 0; i < data.length; i++) {
-				var obj = data[i];
-				if(_this.$listGroup.children().length < _this.options.limit) { 
-					if(typeof obj == "string") {
-						_this.append(obj);
-					} else {
-						for(var key in searchable) {
-							if(typeof obj[searchable[key]] != undefined && obj[searchable[key]].indexOf(keyword) == 0) {
-								_this.append(obj);
-							}
+				if( _this.$listGroup.children().length >= _this.options.limit && _this.options.limit !== false ) { 
+					return;
+				}
+
+				var span = $("<span></span>");
+					span.addClass("auto-wrap");
+					span.css({
+						"font-weight": "bold"
+					});
+
+
+				if(typeof obj == "string") {
+					span.html(_this.lastKeyWord);
+					obj.replace(_this.lastKeyWord, span);
+					_this.append(obj);
+				} else {
+					for(var j = 0; j < searchable.length; j++) {
+						var key = searchable[j];
+						if(typeof obj[key] != undefined && obj[key].indexOf(keyword) == 0) {
+							span.html(_this.lastKeyWord);
+
+							obj[key] = obj[key].replace(_this.lastKeyWord, span.clone().wrap('<div>').parent().html());
+							_this.append(obj);
+
+							break;
 						}
 					}
-				} else {
-					return;
 				}
 			}
 
@@ -149,7 +179,7 @@
 		var $el = _this.template(templateName, objValue).css({"border": 0});
 		_this.$listGroup.append($el);
 
-		$el.bind("click", function(e){
+		$el.bind("mousedown", function(e){
 			e.preventDefault();
 
 			_this.onSelect(e, obj);
@@ -195,15 +225,29 @@
 
 	Plugin.prototype.onSelect= function(e, obj) {
 		var _this = this;
+		var searchable = _this.options.searchable;
+		var value = "";
 
 		if(typeof obj == "string") {
-			_this.$input.val(obj);
+			var span = $("<div></div>").html(obj).find('.auto-wrap')[0];
+			var content = $(span).html();
+
+			obj = obj.replace($(span).clone().wrap('<div>').parent().html(), content);
+			value = obj;
 		} else {
-			_this.$input.val(obj[_this.options.display]);
+			for(var i = 0; i < searchable.length; i++) {
+				var span = $("<div></div>").html(obj[searchable[i]]).find('.auto-wrap')[0];
+				var content = $(span).html();
+
+				obj[searchable[i]] = obj[searchable[i]].replace($(span).clone().wrap('<div>').parent().html(), content);
+			}
+
+			value = obj[_this.options.display];
 		}
 
+		_this.$input.val(value);
 		_this.$input.focus();
-
+		_this.$input.trigger("change");
 
 		_this.options.vent.onselect(e, obj, _this);
 	}
@@ -217,10 +261,10 @@
 		if( currentElement == null ) {
 			if( Key.isDown( Key.DOWN ) ) {
 				$( listGroupItems[ 0 ] ).addClass( _this.options.selectionClassName );
-				$( listGroupItems[ 0 ] ).trigger("click");
+				$( listGroupItems[ 0 ] ).trigger("mousedown");
 			} else if( Key.isDown( Key.UP ) ) {
 				$( listGroupItems[ listGroupItems.length - 1 ] ).addClass( _this.options.selectionClassName );
-				$( listGroupItems[ listGroupItems.length - 1 ] ).trigger("click");
+				$( listGroupItems[ listGroupItems.length - 1 ] ).trigger("mousedown");
 			}
 			return;
 		} 
@@ -236,14 +280,14 @@
 				_this.$input.val( _this.lastKeyWord );
 			} else {
 				$( next ).addClass( _this.options.selectionClassName );
-				$( next ).trigger("click");
+				$( next ).trigger("mousedown");
 			}
 		} else if( Key.isDown( Key.UP ) ) {
 			if( ( currentIndex - 1 ) < 0 && currentElement != null) {
 				_this.$input.val( _this.lastKeyWord );
 			} else {
 				$( previous ).addClass( _this.options.selectionClassName );
-				$( previous ).trigger("click");
+				$( previous ).trigger("mousedown");
 			}
 		}
 	};
