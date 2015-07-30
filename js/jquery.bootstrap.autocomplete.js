@@ -135,7 +135,6 @@
 		if(keyword.trim().length > 0 && data.length > 0) {
 			_this.lastKeyWord = keyword;
 			for( var i = 0; i < data.length; i++ ) {
-				var obj = $.extend(true, {}, data[i]);
 
 				if( _this.$listGroup.children().length >= _this.options.limit && _this.options.limit !== false ) { 
 					return;
@@ -147,15 +146,18 @@
 						"font-weight": "bold"
 					});
 
-
-				if(typeof obj == "string") {
+				if(typeof data[i] == "string") {
+					var obj = data[i];
 					span.html(_this.lastKeyWord);
-					obj.replace(_this.lastKeyWord, span);
-					_this.append(obj);
+					if(typeof obj != undefined && obj.indexOf(keyword) >= 0) {
+						obj = obj.replace(_this.lastKeyWord, span.clone().wrap('<div>').parent().html());
+						_this.append(obj);
+					}
 				} else {
+					var obj = $.extend(true, {}, data[i]);
 					for(var j = 0; j < searchable.length; j++) {
 						var key = searchable[j];
-						if(typeof obj[key] != undefined && obj[key].indexOf(keyword) == 0) {
+						if(typeof obj[key] != undefined && obj[key].indexOf(keyword) >= 0) {
 							span.html(_this.lastKeyWord);
 
 							obj[key] = obj[key].replace(_this.lastKeyWord, span.clone().wrap('<div>').parent().html());
