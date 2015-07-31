@@ -138,7 +138,7 @@
 			_this.onKeyUp( e );
 		} );
 
-		_this.$input.focusout ( function (){
+		_this.$input.blur ( function (){
 			_this.hideListGroup();
 		} );
 
