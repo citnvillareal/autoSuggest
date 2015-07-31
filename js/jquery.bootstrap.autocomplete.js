@@ -1,3 +1,22 @@
+/*!
+ * jQuery autoComplete plugin
+ * Original author: Neil K. Villareal
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2015 Neil K. Villareal
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the Software 
+ * is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in 
+ * all copies or substantial portions of the Software.
+ */
+
 ;(function($, window, document, undefined){
 
 	var pluginName = "autoComplete";
@@ -12,7 +31,9 @@
 			"content-wrapper": "<div class=\"autoComplete-wrapper\"></div>",
 			"list-group": "<div class=\"list-group\"></div>",
 			"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=description%></a>",
-			"bv-list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=value%></a>"
+			"bv-list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=value%></a>",
+			"loading": "<span class=\"list-group-item\"><%=value%></span>",
+			"failed": "<span class=\"list-group-item\"><%=value%></span>"
 		},
 		borderRadius: 5,
 		limit: 5,
@@ -22,7 +43,12 @@
 			}
 		},
 		selectionClassName: "list-group-item-info",
-		url: false
+		url: false,
+		delay: 500,
+		messages: {
+			loading: "Loading...",
+			failed: "No data matched."
+		}
 	};
 
 	var Key = {
@@ -58,6 +84,7 @@
 
 		_this._defaults = defaults;
         _this._name = pluginName;
+        _this.totalMatched = 0;
 
         _this.$el.bind( "keydown", function( e ){
         	Key.onKeydown( e );
@@ -116,58 +143,78 @@
 	Plugin.prototype.onKeyUp = function ( e ) {
 		var _this = this;
 		if( Key.isDown ( Key.ENTER ) ) {
-			_this.hideListGroup();
+			_this.$listGroup.find( "." + _this.options.selectionClassName ).trigger("mousedown");
 		} else if( Key.isDown( Key.DOWN ) || Key.isDown ( Key.UP )) {
 			_this.onSelection ( e );
 		} else if(_this.options.url == false) {
 		   _this.search(_this.$input.val());
-			_this.showHideListGroup();
 		} else {
 			_this.remoteSearch(_this.$input.val());
-			_this.showHideListGroup();
 		}
 	}
 
-	Plugin.prototype.remoteSearch = function(keyword) {
+	Plugin.prototype.remoteSearch = function( keyword ) {
+		var _this = this;
+		var requestUrl = "";
+
+		_this.lastKeyWord = keyword;
+		_this.hideListGroup();
+
 		if(typeof _this.timeoutId != undefined) {
 			clearTimeout(_this.timeoutId);
 		}
+
+		if(typeof _this.xhr != undefined) {
+			_this.xhr.abort();
+		}
+
+		requestUrl = _this.options.url + encodeURIComponent(keyword);
 
 		_this.timeoutId = setTimeout(function(){
 
 			if(keyword.trim().length <= 0) {
 				return;
 			}
+			
+			var $loading = _this.template( "loading", _this.options.messages [ "loading" ] ).css( { "border": 0 } );
+			_this.$listGroup.html($loading);
+			_this.showListGroup();
 
-			$.get(_this.options.url + keyword, function(res) {
-				if(res.data == null) {
-					_this.options.data = [];
+			_this.xhr = $.get( requestUrl, function ( res ) {
+				
+				if( typeof res [ "data" ] == undefined || res [ "data" ] == null ) {
+					var $failed = _this.template( "failed", _this.options.messages [ "failed" ] ).css( { "border": 0 } );
+					_this.$listGroup.html( $failed );
+					_this.options [ "data" ] = [];
 					return;
 				}
 
-				_this.options.data = res.data;
-				if(_this.options[ "data" ].length > 0) {
+				_this.options [ "data" ] = res.data;
+				if( _this.options [ "data" ].length > 0 ) {
 					_this.search( _this.$input.val() );
+				} else {
+					var $failed = _this.template( "failed", _this.options.messages [ "failed" ] ).css( { "border": 0 } );
+					_this.$listGroup.html( $failed );
 				}
 
 				clearTimeout(_this.timeoutId);
-			});
+			} );
 
-		}, 100);
+		}, _this.options.delay);
 	}
 
 	Plugin.prototype.search = function ( keyword ) {
 		var _this = this;
-		var data = _this.options.data;
-		var searchable = _this.options.searchable;
+		var data = _this.options ["data"];
+		var searchable = _this.options ["searchable"];
 
-		_this.$listGroup.html("");
-		
+		_this.hideListGroup();
+		_this.lastKeyWord = keyword;
+
 		if(keyword.trim().length <= 0 && data.length <= 0) {
 			return;
 		}
 
-		_this.lastKeyWord = keyword;
 		for( var i = 0; i < data.length; i++ ) {
 
 			if( _this.$listGroup.children().length >= _this.options.limit && _this.options.limit !== false ) { 
@@ -180,23 +227,24 @@
 					"font-weight": "bold"
 				});
 
+
 			if(typeof data [ i ] == "string") {
 				var obj = data [ i ];
 				span.html(_this.lastKeyWord);
-				if(typeof obj != undefined && obj.indexOf(keyword) >= 0) {
+				if(typeof obj != undefined && obj.indexOf( keyword ) >= 0) {
 					obj = obj.replace(_this.lastKeyWord, span.clone().wrap('<div>').parent().html());
 					_this.append(obj);
 				}
 			} else {
 				var obj = $.extend( true, {}, data[ i ] );
+
 				for(var j = 0; j < searchable.length; j++) {
 					var key = searchable[ j ];
+
 					if(typeof obj[ key ] != undefined && obj[ key ].indexOf( keyword ) >= 0) {
 						span.html( _this.lastKeyWord );
-
 						obj [ key ] = obj [ key ].replace( _this.lastKeyWord, span.clone().wrap( '<div>' ).parent().html() );
 						_this.append(obj);
-
 						break;
 					}
 				}
@@ -208,18 +256,22 @@
 		var _this = this,
 			templateName = ( typeof obj == "string" )? "bv-list-group-item": "list-group-item",
 			objValue = ( typeof obj == "string" )? { "value" : obj }: obj,
-			$el = _this.template(templateName, objValue).css( { "border": 0 } );
-
+			$el = _this.template(templateName, objValue).css( { "border": 0, "border-radius": 0 } );
+		
 		_this.$listGroup.append($el);
 
 		$el.bind( "mousedown", function ( e ) {
 			_this.onSelect( e, obj );
+			_this.options.vent.onselect( e, obj, _this );
 			_this.hideListGroup();
 		} );
 
 		$el.bind( "select", function( e ) {
 			_this.onSelect(e, obj);
 		} );
+		
+		++_this.totalMatched;
+		_this.showListGroup();
 	};
 
 	Plugin.prototype.showListGroup = function () {
@@ -239,27 +291,34 @@
 	Plugin.prototype.hideListGroup = function () {
 		var _this = this;
 
-		_this.$el.css({
-			"border-radius": _this.options.borderRadius + "px"
-		});
-
 		_this.$listGroup.hide();
 
 		$("form").each(function(){
 			$(this).removeAttr("onsubmit");
 		});
 
-		_this.$listGroup.html("");
+		_this.clearListGroup();
 	};
 
 	Plugin.prototype.showHideListGroup = function () {
 		var _this = this;
 
-		if( _this.$listGroup.text().trim().length > 0 ) {
+		if( _this.totalMatched > 0 ) {
 			_this.showListGroup();
 		} else {
 			_this.hideListGroup();
 		}
+	};
+
+	Plugin.prototype.clearListGroup = function() {
+		var _this = this;
+
+		_this.$el.css({
+			"border-radius": _this.options.borderRadius + "px"
+		});
+
+		_this.$listGroup.html("");
+		_this.totalMatched = 0;
 	};
 
 	Plugin.prototype.onSelect= function ( e, obj ) {
@@ -289,12 +348,14 @@
 		_this.$input.val( value );
 		_this.$input.focus();
 		_this.$input.trigger( "change" );
-
-		_this.options.vent.onselect( e, obj, _this );
 	}
 
 	Plugin.prototype.onSelection = function( e, obj ) {
 		var _this = this;
+
+		if( _this.totalMatched <= 0 ) {
+			return;
+		}
 
 		var listGroupItems = _this.$listGroup.children();
 		var currentElement = _this.$listGroup.find( "." + _this.options.selectionClassName)[ 0 ];
@@ -303,9 +364,11 @@
 			if( Key.isDown( Key.DOWN ) ) {
 				$( listGroupItems [ 0 ] ).addClass( _this.options.selectionClassName );
 				$( listGroupItems [ 0 ] ).trigger( "select" );
+				_this.scrollDownListGroup( listGroupItems [ 0 ] );
 			} else if( Key.isDown ( Key.UP ) ) {
 				$( listGroupItems [ listGroupItems.length - 1 ] ).addClass( _this.options.selectionClassName );
 				$( listGroupItems [ listGroupItems.length - 1 ] ).trigger( "select" );
+				_this.scrollUpListGroup( listGroupItems [ listGroupItems.length - 1 ] );
 			}
 			return;
 		} 
@@ -322,6 +385,7 @@
 			} else {
 				$( next ).addClass( _this.options.selectionClassName );
 				$( next ).trigger( "select" );
+				_this.scrollDownListGroup( next );
 			}
 		} else if( Key.isDown( Key.UP ) ) {
 			if( ( currentIndex - 1 ) < 0 && currentElement != null) {
@@ -329,6 +393,7 @@
 			} else {
 				$( previous ).addClass( _this.options.selectionClassName );
 				$( previous ).trigger( "select" );
+				_this.scrollUpListGroup( previous );
 			}
 		}
 	};
@@ -339,14 +404,61 @@
 		var tmpl = _this.options.templates [ templateName ];
 		
 		if(typeof obj != undefined) {
-			$.each ( obj, function( key, value ) {
-				tmpl = tmpl.replace( "<%="+key+"%>", value );
-			} );
+			if(typeof obj == "string") {
+				tmpl = tmpl.replace( "<%=value%>", obj );
+			} else {
+				$.each ( obj, function( key, value ) {
+					tmpl = tmpl.replace( "<%="+key+"%>", value );
+				} );
+			}
 		}
 
 		return $( tmpl );
 	}
 
+	Plugin.prototype.scrollDownListGroup = function ( el ) {
+		var _this = this;
+		var bPos = $( el ).position().top + $( el ).outerHeight();
+
+		if(bPos <= 0) {
+			_this.$listGroup.animate( {
+				scrollTop: 0
+			}, 100 );
+		}else if(bPos >= 200) {
+			var topPos = _this.$listGroup.scrollTop();
+			topPos = topPos + (bPos - 200);
+			_this.$listGroup.animate( {
+				scrollTop: topPos
+			}, 100 );
+		} 
+	}
+
+	Plugin.prototype.scrollUpListGroup = function ( el ) {
+		var _this = this;
+		var bPos = $( el ).position().top;
+		var maxHeight = _this.totalHeight(_this.$listGroup.children());
+
+		if(bPos >= 200) {
+			_this.$listGroup.animate( {
+				scrollTop: (maxHeight - 200) + (200 - $( el ).outerHeight())
+			}, 100 );
+		}else if(bPos <= 0) {
+			var topPos = _this.$listGroup.scrollTop();
+			topPos = _this.$listGroup.scrollTop() - Math.abs($( el ).position().top);
+			_this.$listGroup.animate( {
+				scrollTop: topPos
+			}, 100 );
+		} 
+	}
+
+	Plugin.prototype.totalHeight = function ( childNodes ) {
+		var total = 0;
+		$.each( childNodes, function( key, node ){
+			total += $(node).outerHeight();
+		} );
+
+		return total;
+	}
 	
 	$.fn[pluginName] = function ( options ) {
 		return this.each ( function () {

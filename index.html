@@ -30,59 +30,64 @@
 		$(document).ready(function(){
 
 			var data = {
-				data: [
-					{
-						description: "description01",
-						category: "category01"
-					},
-					{
-						description: "description02",
-						category: "category02"
-					},
-					{
-						description: "description03",
-						category: "category01"
-					},
-					{
-						description: "description04",
-						category: "category02"
-					},
-					{
-						description: "description05",
-						category: "category01"
-					},
-					{
-						description: "description06",
-						category: "category02"
-					},
-					{
-						description: "description07",
-						category: "category01"
-					},
-					{
-						description: "description08",
-						category: "category02"
-					}
-				],
-
-				// url: "http://10.164.114.13:1219/wda-webapp-0.0.1-SNAPSHOT/wda/enum/type/ssoc/commontitlewildcard/",
-
-				// searchable: [
-				// 	"common_title",
-				// 	"ssoc_title"
+				// data: [
+				// 	{
+				// 		description: "description01",
+				// 		category: "category01"
+				// 	},
+				// 	{
+				// 		description: "description02",
+				// 		category: "category02"
+				// 	},
+				// 	{
+				// 		description: "description03",
+				// 		category: "category01"
+				// 	},
+				// 	{
+				// 		description: "description04",
+				// 		category: "category02"
+				// 	},
+				// 	{
+				// 		description: "description05",
+				// 		category: "category01"
+				// 	},
+				// 	{
+				// 		description: "description06",
+				// 		category: "category02"
+				// 	},
+				// 	{
+				// 		description: "description07",
+				// 		category: "category01"
+				// 	},
+				// 	{
+				// 		description: "description08",
+				// 		category: "category02"
+				// 	}
 				// ],
 
+				url: "http://10.164.114.13:1219/wda-webapp-0.0.1-SNAPSHOT/wda/enum/type/ssoc/commontitlewildcard/",
+
 				searchable: [
-					"description"
+					"common_title",
+					"ssoc_title"
 				],
 
-				limit: 5,
+				// searchable: [
+				// 	"description"
+				// ],
 
-				display: "description",
+				limit: false,
 
-				// templates: {
-				// 	"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=common_title%><br/><%=ssoc_title%></a>"
-				// }
+				display: "common_title",
+
+				templates: {
+					"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=common_title%><br/><%=ssoc_title%></a>"
+				},
+				vent: {
+					onselect: function ( e, itemData, _this ) {
+						console.log(itemData);
+					}
+				}
 			};
 
 
