@@ -102,13 +102,14 @@
 
 		_this.$el.wrap( _this.template( "content-wrapper" ) );
 		_this.$input = ( _this.$el.is( "input" ) )? _this.$el: $(_this.$el.find( "input" ));
-		
+		var borderColor = _this.$input.css( "border-color" );
+
 		_this.$parentElement = _this.$el.parent();
 
 		_this.$parentElement.find( "*" ).css( { "border": 0, "border-radius": 0 } );
 
 		_this.$el.css( {
-			"border": "1px solid #ccc",
+			"border": "1px solid " + borderColor,
 			"border-radius": _this.options.borderRadius + "px",
 			"overflow": "hidden"
 		} );
@@ -120,7 +121,7 @@
 		_this.$listGroup = _this.template("list-group").css({
 			"max-height": "200px", 
 			"overflow-y": "auto",
-			"border": "1px solid #ccc", 
+			"border": "1px solid " + borderColor, 
 			"border-radius": "0px 0px " + _this.options.borderRadius + "px " + _this.options.borderRadius + "px", 
 			"border-top": 0,
 			"position": "absolute",
