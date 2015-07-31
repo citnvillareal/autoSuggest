@@ -18,6 +18,7 @@
  */
 
 ;(function($, window, document, undefined){
+	"use strict"
 
 	var pluginName = "autoComplete";
 
@@ -85,6 +86,7 @@
 		_this._defaults = defaults;
         _this._name = pluginName;
         _this.totalMatched = 0;
+        _this.prevFormOnSubmit = [];
 
         _this.$el.bind( "keydown", function( e ){
         	Key.onKeydown( e );
@@ -137,6 +139,12 @@
 
 		_this.$input.focusout ( function (){
 			_this.hideListGroup();
+		} );
+
+		$("form").each( function ( key, form ) {
+			if(typeof $(form).attr("onsubmit") != undefined) {
+				_this.prevFormOnSubmit[key] = $(form).attr("onsubmit");
+			}
 		} );
 	};
 
@@ -283,8 +291,8 @@
 
 		_this.$listGroup.show();
 
-		$("form").each(function(){
-			$(this).attr("onsubmit", "return false;");
+		$("form").each(function(key, form){
+			$(form).attr("onsubmit", "return false;");
 		});
 	};
 
@@ -293,8 +301,10 @@
 
 		_this.$listGroup.hide();
 
-		$("form").each(function(){
-			$(this).removeAttr("onsubmit");
+		$("form").each(function(key, form){
+			if(typeof _this.prevFormOnSubmit[key] != undefined) {
+				$(form).attr("onsubmit", _this.prevFormOnSubmit[key]);
+			}
 		});
 
 		_this.clearListGroup();
