@@ -1,5 +1,5 @@
 /*!
- * jQuery autoComplete plugin
+ * jQuery autoSuggest plugin
  * Original author: Neil K. Villareal
  *
  * The MIT License (MIT)
