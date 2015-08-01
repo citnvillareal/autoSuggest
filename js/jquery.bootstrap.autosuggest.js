@@ -144,26 +144,18 @@
             _this.onKeyUp(e);
         });
 
-        _this.$input.blur(function() {
-            _this.hideListGroup();
+        _this.$input.blur(function(e) {
+            _this.onEnter(e);
         });
+
+        _this.$el.closest("form").attr('autocomplete', 'off');
+        _this.$input.attr('autocomplete', 'off');
     };
 
     Plugin.prototype.onKeyUp = function(e) {
         var _this = this;
         if (Key.isDown(Key.ENTER)) {
-        	if(!_this.$listGroup.is(":Visible")) {
-            	_this.$input.closest("form").submit();
-            }
-            var selected = _this.$listGroup.find("." + _this.options.selectionClassName)[0];
-            
-            if(selected == null) {
-            	_this.onNoSelect(e);
-            } else {
-            	$(selected).trigger("mousedown");
-            }
-
-            _this.hideListGroup();
+        	_this.onEnter(e);
         } else if (Key.isDown(Key.DOWN) || Key.isDown(Key.UP)) {
             _this.onSelection(e);
         } else if (_this.options.url == false) {
@@ -172,6 +164,23 @@
             _this.remoteSearch(_this.$input.val());
         }
     }
+
+    Plugin.prototype.onEnter = function(e) {    
+        var _this = this;
+
+        if(!_this.$listGroup.is(":Visible")) {
+            _this.$el.closest("form").submit();
+        }
+        var selected = _this.$listGroup.find("." + _this.options.selectionClassName)[0];
+        
+        if(selected == null) {
+            _this.onNoSelect(e);
+        } else {
+            $(selected).trigger("mousedown");
+        }
+
+        _this.hideListGroup();
+    };
 
     Plugin.prototype.remoteSearch = function(keyword) {
         var _this = this;
@@ -274,7 +283,8 @@
 
         if(_this.totalMatched <= 0) {
         	var $failed = _this.template("failed", _this.options.messages["failed"]).css({
-                "border": 0
+                "border": 0,
+                "border-radius": 0
             });
             _this.$listGroup.html($failed);
             _this.showListGroup();

@@ -4,18 +4,18 @@
 	<link rel="stylesheet" type="text/css" href="media/bootstrap/css/bootstrap.min.css" />
 	<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
 	<script type="text/javascript" src="media/bootstrap/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="js/jquery.bootstrap.autocomplete.js"></script>
+	<script type="text/javascript" src="js/jquery.bootstrap.autosuggest.js"></script>
 	<script type="text/javascript">
 		function submitted() {
 			console.log("test");
-			return true;
+			return false;
 		}
 	</script>
 </head>
 <body>
 	<div class="container">
 		<br/><br/><br/><br/>
-		<form onsubmit="return submitted">
+		<form onsubmit="return submitted();">
 			<div class="row">
 				<div class="col-xs-12">
 					<input type="search" class="form-control autocomplete">
