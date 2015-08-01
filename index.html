@@ -23,7 +23,7 @@
 			</div>
 			<div class="row">
 				<div class="col-xs-12">
-					<div class="input-group autocomplete">
+					<div class="input-group">
 					  <span class="input-group-addon">$</span>
 					  <input type="text" class="form-control" aria-label="Amount (to the nearest dollar)">
 					  <span class="input-group-addon">.00</span>
@@ -99,6 +99,9 @@
 				},
 				vent: {
 					onselect: function ( e, itemData, _this ) {
+						console.log(itemData);
+					},
+					onblur: function ( e, itemData, _this ) {
 						console.log(itemData);
 					}
 				}

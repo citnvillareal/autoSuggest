@@ -41,6 +41,9 @@
         vent: {
             onselect: function(e, itemData, _this) {
                 // TO DO
+            },
+            onblur: function(e, itemData, _this) {
+                // TO DO
             }
         },
         selectionClassName: "list-group-item-info",
@@ -88,6 +91,7 @@
         _this._name = pluginName;
         _this.totalMatched = 0;
         _this.prevFormOnSubmit = [];
+        _this.lastSelected = null;
 
         _this.$el.bind("keydown", function(e) {
         	e.stopPropagation();
@@ -145,7 +149,7 @@
         });
 
         _this.$input.blur(function(e) {
-            _this.onEnter(e);
+            _this.onBlur(e);
         });
 
         _this.$el.closest("form").attr('autocomplete', 'off');
@@ -171,6 +175,7 @@
         if(!_this.$listGroup.is(":Visible")) {
             _this.$el.closest("form").submit();
         }
+
         var selected = _this.$listGroup.find("." + _this.options.selectionClassName)[0];
         
         if(selected == null) {
@@ -181,6 +186,22 @@
 
         _this.hideListGroup();
     };
+
+    Plugin.prototype.onBlur = function(e) {    
+        var _this = this;
+        var selected = _this.$listGroup.find("." + _this.options.selectionClassName)[0];
+        
+        if(selected == null) {
+            _this.onNoSelect(e);
+        } else {
+            $(selected).trigger("mousedown");
+        }
+
+        _this.options.vent.onblur(e, _this.lastSelected, _this);
+        _this.hideListGroup();
+    };
+
+
 
     Plugin.prototype.remoteSearch = function(keyword) {
         var _this = this;
@@ -305,7 +326,8 @@
         _this.$listGroup.append($el);
 
         $el.bind("mousedown", function(e) {
-            _this.onSelect(e, obj);
+            _this.lastKeyWord = _this.$input.val();
+            _this.onSelect(e, obj, true);
             _this.options.vent.onselect(e, obj, _this);
             _this.hideListGroup();
         });
@@ -355,7 +377,7 @@
         _this.totalMatched = 0;
     };
 
-    Plugin.prototype.onSelect = function(e, obj) {
+    Plugin.prototype.onSelect = function(e, obj, flag) {
         e.preventDefault();
         var _this = this;
         var searchable = _this.options.searchable;
@@ -381,6 +403,11 @@
             value = obj[_this.options.display];
         }
 
+        if(flag === true) {
+            _this.lastKeyWord = value;
+            _this.lastSelected = obj;
+        }
+
         _this.$input.val(value);
         _this.$input.focus();
         _this.$input.trigger("change");
@@ -389,13 +416,18 @@
     Plugin.prototype.onNoSelect = function(e) {
     	var _this = this;
     	var obj = _this.options.defaultItemData;
-    	if(_this.options.searchable.length > 0) {
+
+        if(_this.lastSelected != null && typeof _this.lastSelected[_this.options.display] != undefined && _this.lastKeyWord == _this.lastSelected[_this.options.display]) {
+            obj = _this.lastSelected;
+        } else if(_this.options.searchable.length > 0) {
     		for(var i = 0; i < _this.options.searchable.length; i++) {
     			obj[_this.options.searchable[i]] = "";
     		}
     		
     		obj[_this.options.display] = _this.$input.val();
     	}
+        
+        _this.lastSelected = obj;
     	_this.options.vent.onselect(e, obj, _this);
     }
 
