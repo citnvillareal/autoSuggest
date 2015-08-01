@@ -5,11 +5,17 @@
 	<script type="text/javascript" src="js/jquery-1.11.3.min.js"></script>
 	<script type="text/javascript" src="media/bootstrap/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="js/jquery.bootstrap.autocomplete.js"></script>
+	<script type="text/javascript">
+		function submitted() {
+			console.log("test");
+			return true;
+		}
+	</script>
 </head>
 <body>
 	<div class="container">
 		<br/><br/><br/><br/>
-		<form onsubmit="test">
+		<form onsubmit="return submitted">
 			<div class="row">
 				<div class="col-xs-12">
 					<input type="search" class="form-control autocomplete">
@@ -29,59 +35,67 @@
 	<script type="text/javascript">
 		$(document).ready(function(){
 
+			$('html').keydown(function(e){
+				if(e.keyCode == 13) {
+					$('form').submit();
+				}
+			});
+
+
 			var data = {
-				// data: [
-				// 	{
-				// 		description: "description01",
-				// 		category: "category01"
-				// 	},
-				// 	{
-				// 		description: "description02",
-				// 		category: "category02"
-				// 	},
-				// 	{
-				// 		description: "description03",
-				// 		category: "category01"
-				// 	},
-				// 	{
-				// 		description: "description04",
-				// 		category: "category02"
-				// 	},
-				// 	{
-				// 		description: "description05",
-				// 		category: "category01"
-				// 	},
-				// 	{
-				// 		description: "description06",
-				// 		category: "category02"
-				// 	},
-				// 	{
-				// 		description: "description07",
-				// 		category: "category01"
-				// 	},
-				// 	{
-				// 		description: "description08",
-				// 		category: "category02"
-				// 	}
-				// ],
-
-				url: "http://10.164.114.13:1219/wda-webapp-0.0.1-SNAPSHOT/wda/enum/type/ssoc/commontitlewildcard/",
-
-				searchable: [
-					"common_title",
-					"ssoc_title"
+				data: [
+					{
+						description: "description01",
+						category: "category01"
+					},
+					{
+						description: "description02",
+						category: "category02"
+					},
+					{
+						description: "description03",
+						category: "category01"
+					},
+					{
+						description: "description04",
+						category: "category02"
+					},
+					{
+						description: "description05",
+						category: "category01"
+					},
+					{
+						description: "description06",
+						category: "category02"
+					},
+					{
+						description: "description07",
+						category: "category01"
+					},
+					{
+						description: "description08",
+						category: "category02"
+					}
 				],
 
+				//url: "http://10.164.114.13:1219/wda-webapp-0.0.1-SNAPSHOT/wda/enum/type/ssoc/commontitlewildcard/",
+
 				// searchable: [
-				// 	"description"
+				// 	"common_title",
+				// 	"ssoc_title"
 				// ],
+
+				searchable: [
+					"description",
+					"category"
+				],
 
 				limit: false,
 
-				display: "common_title",
+				display: "description",
 
 				templates: {
-					"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=common_title%><br/><%=ssoc_title%></a>"
+					"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=description%><br/><%=category%></a>"
 				},
 				vent: {
 					onselect: function ( e, itemData, _this ) {
@@ -93,7 +107,7 @@
 
 			$(".autoComplete").each(function(){
 
-				$(this).autoComplete(data);
+				$(this).autoSuggest(data);
 
 			});
 		});
