@@ -238,7 +238,6 @@
 
                 if (typeof res["data"] == undefined || res["data"] == null) {
                     _this.options["data"] = [];
-                    return;
                 } else {
                 	_this.options["data"] = res.data;
                 }
