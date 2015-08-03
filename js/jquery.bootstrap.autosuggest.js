@@ -7,13 +7,13 @@
  * Copyright (c) 2015 Neil K. Villareal
  *
  * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the "Software"), 
+ * a copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
  * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the Software 
+ * and/or sell copies of the Software, and to permit persons to whom the Software
  * is furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in 
+ * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
  */
 ;
@@ -94,7 +94,7 @@
         _this.lastSelected = null;
 
         _this.$el.bind("keydown", function(e) {
-        	e.stopPropagation();
+            e.stopPropagation();
             Key.onKeydown(e);
         });
 
@@ -108,10 +108,13 @@
 
         _this.$el.wrap(_this.template("content-wrapper"));
         _this.$input = (_this.$el.is("input")) ? _this.$el : $(_this.$el.find("input"));
+        _this.$parentElement = _this.$el.parent();
+
         var borderColor = _this.$input.css("border-color");
         var borderWidth = _this.$input.css("border-width");
-
-        _this.$parentElement = _this.$el.parent();
+        var position = _this.$el.position();
+        var width = _this.$el.outerWidth();
+        var heigth = _this.$el.outerHeight();
 
         _this.$parentElement.find("*").css({
             "border": 0,
@@ -123,10 +126,6 @@
             "border-radius": _this.options.borderRadius + "px",
             "overflow": "hidden"
         });
-
-        var position = _this.$el.position();
-        var width = _this.$el.outerWidth();
-        var heigth = _this.$el.outerHeight();
 
         _this.$listGroup = _this.template("list-group").css({
             "max-height": "200px",
@@ -158,8 +157,11 @@
 
     Plugin.prototype.onKeyUp = function(e) {
         var _this = this;
+
+        _this.reloadChangingDesign();
+
         if (Key.isDown(Key.ENTER)) {
-        	_this.onEnter(e);
+            _this.onEnter(e);
         } else if (Key.isDown(Key.DOWN) || Key.isDown(Key.UP)) {
             _this.onSelection(e);
         } else if (_this.options.url == false) {
@@ -169,16 +171,30 @@
         }
     }
 
-    Plugin.prototype.onEnter = function(e) {    
+    Plugin.prototype.reloadChangingDesign = function() {
         var _this = this;
 
-        if(!_this.$listGroup.is(":Visible")) {
+        var position = _this.$el.position();
+        var width = _this.$el.outerWidth();
+        var heigth = _this.$el.outerHeight();
+
+        _this.$listGroup.css({
+            "top": position.top + heigth + "px",
+            "left": position.left + "px",
+            "width": width + "px"
+        });
+    }
+
+    Plugin.prototype.onEnter = function(e) {
+        var _this = this;
+
+        if (!_this.$listGroup.is(":Visible")) {
             _this.$el.closest("form").submit();
         }
 
         var selected = _this.$listGroup.find("." + _this.options.selectionClassName)[0];
-        
-        if(selected == null) {
+
+        if (selected == null) {
             _this.onNoSelect(e);
         } else {
             $(selected).trigger("mousedown");
@@ -187,11 +203,11 @@
         _this.hideListGroup();
     };
 
-    Plugin.prototype.onBlur = function(e) {    
+    Plugin.prototype.onBlur = function(e) {
         var _this = this;
         var selected = _this.$listGroup.find("." + _this.options.selectionClassName)[0];
-        
-        if(selected == null) {
+
+        if (selected == null) {
             _this.onNoSelect(e);
         } else {
             $(selected).trigger("mousedown");
@@ -240,7 +256,7 @@
                 if (typeof res["data"] == undefined || res["data"] == null) {
                     _this.options["data"] = [];
                 } else {
-                	_this.options["data"] = res.data;
+                    _this.options["data"] = res.data;
                 }
 
                 _this.search(_this.$input.val());
@@ -296,14 +312,14 @@
                     }
                 }
 
-                if(flag) {
-                	_this.append(obj);
+                if (flag) {
+                    _this.append(obj);
                 }
             }
         }
 
-        if(_this.totalMatched <= 0) {
-        	var $failed = _this.template("failed", _this.options.messages["failed"]).css({
+        if (_this.totalMatched <= 0) {
+            var $failed = _this.template("failed", _this.options.messages["failed"]).css({
                 "border": 0,
                 "border-radius": 0
             });
@@ -322,7 +338,7 @@
                 "border": 0,
                 "border-radius": 0
             });
-            
+
         _this.$listGroup.append($el);
 
         $el.bind("mousedown", function(e) {
@@ -403,7 +419,7 @@
             value = obj[_this.options.display];
         }
 
-        if(flag === true) {
+        if (flag === true) {
             _this.lastKeyWord = value;
             _this.lastSelected = obj;
         }
@@ -414,21 +430,21 @@
     }
 
     Plugin.prototype.onNoSelect = function(e) {
-    	var _this = this;
-    	var obj = _this.options.defaultItemData;
+        var _this = this;
+        var obj = _this.options.defaultItemData;
 
-        if(_this.lastSelected != null && typeof _this.lastSelected[_this.options.display] != undefined && _this.lastKeyWord == _this.lastSelected[_this.options.display]) {
+        if (_this.lastSelected != null && typeof _this.lastSelected[_this.options.display] != undefined && _this.lastKeyWord == _this.lastSelected[_this.options.display]) {
             obj = _this.lastSelected;
-        } else if(_this.options.searchable.length > 0) {
-    		for(var i = 0; i < _this.options.searchable.length; i++) {
-    			obj[_this.options.searchable[i]] = "";
-    		}
-    		
-    		obj[_this.options.display] = _this.$input.val();
-    	}
-        
+        } else if (_this.options.searchable.length > 0) {
+            for (var i = 0; i < _this.options.searchable.length; i++) {
+                obj[_this.options.searchable[i]] = "";
+            }
+
+            obj[_this.options.display] = _this.$input.val();
+        }
+
         _this.lastSelected = obj;
-    	_this.options.vent.onselect(e, obj, _this);
+        _this.options.vent.onselect(e, obj, _this);
     }
 
     Plugin.prototype.onSelection = function(e, obj) {
