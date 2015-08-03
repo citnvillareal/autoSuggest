@@ -24,10 +24,8 @@
 
     var defaults = {
         data: [],
-        searchable: [
-            "description"
-        ],
-        display: "description",
+        searchable: ["value"],
+        display: "value",
         templates: {
             "content-wrapper": "<div class=\"autoComplete-wrapper\"></div>",
             "list-group": "<div class=\"list-group\"></div>",
@@ -53,7 +51,8 @@
             loading: "Loading...",
             failed: "No data matched."
         },
-        defaultItemData: {}
+        defaultItemData: {},
+        caseSensitive: false
     };
 
     var Key = {
@@ -131,8 +130,6 @@
                 }
             }
         });
-
-        console.log(borderRadius);
 
         _this.options.borderRadius = $.extend(true, {}, borderRadius, _this.options.borderRadius);
 
@@ -299,6 +296,7 @@
 
         _this.hideListGroup();
         _this.lastKeyWord = keyword;
+        _this.regExp = new RegExp(keyword, "g"+((_this.options.caseSensitive)?"":"i"));
 
         if (keyword.trim().length <= 0) {
             return;
@@ -310,18 +308,10 @@
                 return;
             }
 
-            var span = $("<span></span>");
-            span.addClass("auto-wrap");
-            span.css({
-                "font-weight": "bold"
-            });
-
-
             if (typeof data[i] == "string") {
                 var obj = data[i];
-                span.html(_this.lastKeyWord);
-                if (typeof obj != undefined && obj.indexOf(keyword) >= 0) {
-                    obj = obj.replace(_this.lastKeyWord, span.clone().wrap('<div>').parent().html());
+                if (typeof obj != undefined && _this.regExp.test(obj)) {
+                    obj = _this.wrapKeyWord(obj, _this.lastKeyWord);
                     _this.append(obj);
                 }
             } else {
@@ -330,10 +320,8 @@
 
                 for (var j = 0; j < searchable.length; j++) {
                     var key = searchable[j];
-
-                    if (typeof obj[key] != undefined && obj[key].indexOf(keyword) >= 0) {
-                        span.html(_this.lastKeyWord);
-                        obj[key] = obj[key].replace(_this.lastKeyWord, span.clone().wrap('<div>').parent().html());
+                    if (typeof obj[key] != undefined && _this.regExp.test(obj[key])) {
+                        obj[key] = _this.wrapKeyWord(obj[key], _this.lastKeyWord);
                         flag = true;
                     }
                 }
@@ -354,6 +342,41 @@
         }
     };
 
+    Plugin.prototype.wrapKeyWord = function(fullText, keyWord) {
+        var _this = this;
+        var span = $("<span></span>");
+            span.addClass("auto-wrap");
+            span.css({
+                "font-weight": "bold"
+            });
+
+        var regExp = new RegExp(keyWord, "g"+((_this.options.caseSensitive)?"":"i"));
+        var matches = fullText.match(regExp);
+
+        for(var k = 0; k < matches.length; k++) {
+            fullText = fullText.replace(matches[k], "[:"+k+"]");
+            matches[k] = span.clone().html(matches[k]).wrap('<div>').parent().html();
+        }
+
+        for(var k = 0; k < matches.length; k++) {
+            fullText = fullText.replace("[:"+k+"]", matches[k]);
+        }
+
+        return fullText;
+    };
+
+    Plugin.prototype.unwrapKeyWord = function(fullText) {
+        $("<div></div>").html(fullText).find('.auto-wrap').each(function(){
+            var span = $(this);
+            if (typeof span != undefined) {
+                var content = $(span).html();
+                fullText = fullText.replace($(span).clone().wrap('<div>').parent().html(), content);
+            }
+        });
+
+        return fullText;
+    };
+
     Plugin.prototype.append = function(obj) {
         var _this = this,
             templateName = (typeof obj == "string") ? "bv-list-group-item" : "list-group-item",
@@ -370,7 +393,6 @@
         $el.bind("mousedown", function(e) {
             _this.lastKeyWord = _this.$input.val();
             _this.onSelect(e, obj, true);
-            _this.options.vent.onselect(e, obj, _this);
             _this.hideListGroup();
         });
 
@@ -432,20 +454,11 @@
         var value = "";
 
         if (typeof obj == "string") {
-            var span = $("<div></div>").html(obj).find('.auto-wrap')[0];
-            if (typeof span != undefined) {
-                var content = $(span).html();
-
-                obj = obj.replace($(span).clone().wrap('<div>').parent().html(), content);
-                value = obj;
-            }
+            value = _this.unwrapKeyWord(obj);
+            obj = {"value": value};
         } else {
             for (var i = 0; i < searchable.length; i++) {
-                var span = $("<div></div>").html(obj[searchable[i]]).find('.auto-wrap')[0];
-                if (typeof span != undefined) {
-                    var content = $(span).html();
-                    obj[searchable[i]] = obj[searchable[i]].replace($(span).clone().wrap('<div>').parent().html(), content);
-                }
+                obj[searchable[i]] = _this.unwrapKeyWord(obj[searchable[i]]);
             }
 
             value = obj[_this.options.display];
@@ -454,6 +467,8 @@
         if (flag === true) {
             _this.lastKeyWord = value;
             _this.lastSelected = obj;
+
+            _this.options.vent.onselect(e, obj, _this);
         }
 
         _this.$input.val(value);
