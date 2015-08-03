@@ -95,7 +95,8 @@
 				display: "common_title",
 
 				templates: {
-					"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=common_title%><br/><%=ssoc_title%></a>"
+					"list-group": "<ul class=\"list-group\"></ul>",
+					"list-group-item": "<li class=\"list-group-item\" href=\"#\"><%=common_title%><br/><%=ssoc_title%></li>"
 				},
 				vent: {
 					onselect: function ( e, itemData, _this ) {

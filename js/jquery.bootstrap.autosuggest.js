@@ -226,7 +226,8 @@
                 return;
             }
             var $loading = _this.template("loading", _this.options.messages["loading"]).css({
-                "border": 0
+                "border": 0,
+                "border-radius": 0
             });
             _this.$listGroup.html($loading);
             _this.showListGroup();
