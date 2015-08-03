@@ -36,7 +36,7 @@
             "loading": "<span class=\"list-group-item\"><%=value%></span>",
             "failed": "<span class=\"list-group-item\"><%=value%></span>"
         },
-        borderRadius: 5,
+        borderRadius: {},
         limit: 5,
         vent: {
             onselect: function(e, itemData, _this) {
@@ -116,6 +116,26 @@
         var width = _this.$el.outerWidth();
         var heigth = _this.$el.outerHeight();
 
+        var borderRadius = {};
+        borderRadius.topLeft = _this.$el.css("border-top-left-radius");
+        borderRadius.topRight = _this.$el.css("border-top-right-radius");
+        borderRadius.bottomLeft = _this.$el.css("border-bottom-left-radius");
+        borderRadius.bottomRight = _this.$el.css("border-bottom-right-radius");
+        borderRadius.all = "0px";
+
+
+        $.each(borderRadius, function(key, radius){
+            if(typeof _this.options.borderRadius.all == undefined) {
+                if(parseInt(radius.replace("px", "")) > parseInt(borderRadius.all.replace("px", ""))) {
+                    borderRadius.all = radius;
+                }
+            }
+        });
+
+        console.log(borderRadius);
+
+        _this.options.borderRadius = $.extend(true, {}, borderRadius, _this.options.borderRadius);
+
         _this.$parentElement.find("*").css({
             "border": 0,
             "border-radius": 0
@@ -123,7 +143,10 @@
 
         _this.$el.css({
             "border": borderWidth + " solid " + borderColor,
-            "border-radius": _this.options.borderRadius + "px",
+            "border-top-left-radius": _this.options.borderRadius.topLeft,
+            "border-top-right-radius": _this.options.borderRadius.topRight,
+            "border-bottom-left-radius": _this.options.borderRadius.bottomLeft,
+            "border-bottom-right-radius": _this.options.borderRadius.bottomRight,
             "overflow": "hidden"
         });
 
@@ -131,7 +154,10 @@
             "max-height": "200px",
             "overflow-y": "auto",
             "border": borderWidth + " solid " + borderColor,
-            "border-radius": "0px 0px " + _this.options.borderRadius + "px " + _this.options.borderRadius + "px",
+            "border-top-left-radius": "0px",
+            "border-top-right-radius": "0px",
+            "border-bottom-left-radius": _this.options.borderRadius.all,
+            "border-bottom-right-radius": _this.options.borderRadius.all,
             "border-top": 0,
             "position": "absolute",
             "top": position.top + heigth + "px",
@@ -359,7 +385,10 @@
         var _this = this;
 
         _this.$el.css({
-            "border-radius": _this.options.borderRadius + "px " + _this.options.borderRadius + "px 0px 0px"
+            "border-top-left-radius": _this.options.borderRadius.topLeft,
+            "border-top-right-radius": _this.options.borderRadius.topRight,
+            "border-bottom-left-radius": "0px",
+            "border-bottom-right-radius": "0px"
         });
 
         _this.$listGroup.show();
@@ -386,7 +415,10 @@
         var _this = this;
 
         _this.$el.css({
-            "border-radius": _this.options.borderRadius + "px"
+            "border-top-left-radius": _this.options.borderRadius.topLeft,
+            "border-top-right-radius": _this.options.borderRadius.topRight,
+            "border-bottom-left-radius": _this.options.borderRadius.bottomLeft,
+            "border-bottom-right-radius": _this.options.borderRadius.bottomRight,
         });
 
         _this.$listGroup.html("");
