@@ -7,7 +7,7 @@
 	<script type="text/javascript" src="js/jquery.bootstrap.autosuggest.js"></script>
 	<script type="text/javascript">
 		function submitted() {
-			console.log("submitted");
+			//console.log("submitted");
 			return false;
 		}
 	</script>
@@ -21,70 +21,13 @@
 					<input type="search" class="form-control auto-suggest">
 				</div>
 			</div>
-			<div class="row">
-				<div class="col-xs-12">
-					<div class="input-group">
-					  <span class="input-group-addon" id="basic-addon1">Seach</span>
-					  <input type="text" class="form-control auto-suggest" placeholder="Username" aria-describedby="basic-addon1" style="border-top-right-radius: 4px;border-bottom-right-radius: 4px">
-					</div>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-xs-12">
-					<div class="input-group">
-					  <span class="input-group-addon">Seach</span>
-					  <input type="text" class="form-control auto-suggest" aria-label="Amount (to the nearest dollar)">
-					  <span class="input-group-addon">.00</span>
-					</div>
-				</div>
-			</div>
 		</form>
 	</div>
 	<script type="text/javascript">
 		$(document).ready(function(){
 
-			$('html').keydown(function(e){
-				if(e.keyCode == 13) {
-					$('form').submit();
-				}
-			});
-
 
 			var config = {
-				// data: [
-				// 	{
-				// 		description: "description01",
-				// 		category: "category01"
-				// 	},
-				// 	{
-				// 		description: "Description02",
-				// 		category: "category02"
-				// 	},
-				// 	{
-				// 		description: "description03",
-				// 		category: "category01"
-				// 	},
-				// 	{
-				// 		description: "description04 Des",
-				// 		category: "Category02"
-				// 	},
-				// 	{
-				// 		description: "description05",
-				// 		category: "category01"
-				// 	},
-				// 	{
-				// 		description: "description06",
-				// 		category: "category02"
-				// 	},
-				// 	{
-				// 		description: "description07",
-				// 		category: "category01"
-				// 	},
-				// 	{
-				// 		description: "description08",
-				// 		category: "category02"
-				// 	}
-				// ],
 
 				data: [
 					{
@@ -128,20 +71,23 @@
 
 				limit: false,
 
-				display: "description",
+				display: "category",
 
 				templates: {
 					"list-group": "<div class=\"list-group\"></div>",
-					"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=category%><br/><%=description%></a>"
+					"list-group-item": "<a class=\"list-group-item\" href=\"#\"><%=description%><br/><%=category%></a>"
 				},
 
 				vent: {
 					onselect: function ( e, itemData, _this ) {
-						console.log(itemData);
+						//console.log(itemData);
 					},
 					onblur: function ( e, itemData, _this ) {
+						//console.log(itemData);
+					},
+					onEnter: function ( e, itemData, _this ) {
 						console.log(itemData);
-					}
+					},
 				}
 			};
 

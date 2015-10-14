@@ -42,6 +42,9 @@
             },
             onblur: function(e, itemData, _this) {
                 // TO DO
+            },
+            onEnter: function(e, itemData, _this) {
+                // TO DO
             }
         },
         selectionClassName: "list-group-item-info",
@@ -224,6 +227,7 @@
         }
 
         _this.hideListGroup();
+        _this.options.vent.onEnter(e, _this.lastSelected, _this);
     };
 
     Plugin.prototype.onBlur = function(e) {
@@ -264,6 +268,7 @@
             if (keyword.trim().length <= 0) {
                 return;
             }
+            
             var $loading = _this.template("loading", _this.options.messages["loading"]).css({
                 "border": 0,
                 "border-radius": 0
@@ -296,7 +301,7 @@
 
         _this.hideListGroup();
         _this.lastKeyWord = keyword;
-        _this.regExp = new RegExp(keyword, "g"+((_this.options.caseSensitive)?"":"i"));
+        _this.regExp = new RegExp(keyword.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), "g"+((_this.options.caseSensitive)?"":"i"));
 
         if (keyword.trim().length <= 0) {
             return;
