@@ -43,9 +43,9 @@
             onblur: function(e, itemData, _this) {
                 // TO DO
             },
-            onEnter: function(e, itemData, _this) {
+            onenter: function(e, itemData, _this) {
                 // TO DO
-            }
+            },
         },
         selectionClassName: "list-group-item-info",
         url: false,
@@ -113,11 +113,11 @@
         _this.$parentElement = _this.$el.parent();
 
         var borderColor = _this.$input.css("border-color");
-        var borderWidth = _this.$input.css("border-width");
+        var borderWidth = _this.$input.css("border-width") || 0;
         var position = _this.$el.position();
         var width = _this.$el.outerWidth();
         var heigth = _this.$el.outerHeight();
-
+        
         var borderRadius = {};
         borderRadius.topLeft = _this.$el.css("border-top-left-radius");
         borderRadius.topRight = _this.$el.css("border-top-right-radius");
@@ -185,7 +185,7 @@
         var _this = this;
 
         _this.reloadChangingDesign();
-
+        
         if (Key.isDown(Key.ENTER)) {
             _this.onEnter(e);
         } else if (Key.isDown(Key.DOWN) || Key.isDown(Key.UP)) {
@@ -215,6 +215,7 @@
         var _this = this;
 
         if (!_this.$listGroup.is(":Visible")) {
+            _this.options.vent.onenter(e, _this.lastSelected, _this);
             _this.$el.closest("form").submit();
         }
 
@@ -227,7 +228,6 @@
         }
 
         _this.hideListGroup();
-        _this.options.vent.onEnter(e, _this.lastSelected, _this);
     };
 
     Plugin.prototype.onBlur = function(e) {
@@ -268,7 +268,6 @@
             if (keyword.trim().length <= 0) {
                 return;
             }
-            
             var $loading = _this.template("loading", _this.options.messages["loading"]).css({
                 "border": 0,
                 "border-radius": 0
@@ -301,7 +300,7 @@
 
         _this.hideListGroup();
         _this.lastKeyWord = keyword;
-        _this.regExp = new RegExp(keyword.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&"), "g"+((_this.options.caseSensitive)?"":"i"));
+        _this.regExp = new RegExp(keyword, "g"+((_this.options.caseSensitive)?"":"i"));
 
         if (keyword.trim().length <= 0) {
             return;
